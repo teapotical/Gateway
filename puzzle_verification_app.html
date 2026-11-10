@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRIXWORKS v1.0 - The Gateway</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .code-font { font-family: 'Fira Code', monospace; }
+        .glow-effect { box-shadow: 0 0 25px rgba(59, 130, 246, 0.15); }
+        .glow-success { box-shadow: 0 0 25px rgba(34, 197, 94, 0.2); }
+        .glow-error { box-shadow: 0 0 25px rgba(239, 68, 68, 0.2); }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-600/20 text-blue-400 rounded-lg border border-blue-500/30">
+                    <i data-lucide="terminal" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white code-font">TRIXWORKS <span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded ml-2">v1.0</span></h1>
+                    <p class="text-xs text-slate-400 font-medium">The Gateway</p>
+                </div>
+            </div>
+
+            <!-- Stats & Progress Indicator -->
+            <div class="flex items-center gap-6">
+                <div class="text-right">
+                    <div class="text-xs text-slate-400">Total Progress</div>
+                    <div class="text-sm font-semibold text-blue-400 code-font" id="progress-text">0 / 11 Solved</div>
+                </div>
+                <div class="w-32 bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                    <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <button onclick="resetProgress()" class="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1" title="Reset local data">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Sidebar: Step Navigation List -->
+            <aside class="lg:col-span-4 space-y-3">
+                <div class="flex justify-between items-center px-1 mb-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Select Challenge</span>
+                    <span class="text-xs text-slate-500" id="step-count">11 Steps</span>
+                </div>
+                <div id="puzzle-selector-list" class="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                    <!-- Dynamic rendering of steps -->
+                </div>
+            </aside>
+
+            <!-- Main Challenge & Submission Panel -->
+            <section class="lg:col-span-8 flex flex-col gap-6">
+                
+                <!-- Main Card -->
+                <div id="challenge-card" class="bg-slate-900 border border-slate-800 rounded-xl p-6 glow-effect relative overflow-hidden">
+                    
+                    <!-- Step Header -->
+                    <div class="flex justify-between items-start border-b border-slate-800 pb-4 mb-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span id="challenge-badge" class="px-2 py-0.5 text-xs font-semibold rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Step 0</span>
+                                <span id="difficulty-badge" class="px-2 py-0.5 text-xs font-semibold rounded bg-green-500/10 text-green-400 border border-green-500/20">Easy</span>
+                            </div>
+                            <h2 id="challenge-title" class="text-xl font-bold text-white">Step 0</h2>
+                        </div>
+                        <div id="status-icon-container">
+                            <i data-lucide="lock" class="w-6 h-6 text-slate-500"></i>
+                        </div>
+                    </div>
+
+                    <!-- Puzzle Prompt -->
+                    <div class="mb-6">
+                        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Instructions / Prompt</label>
+                        <div id="challenge-prompt" class="bg-slate-950 border border-slate-800 rounded-lg p-4 text-slate-300 text-sm leading-relaxed code-font whitespace-pre-wrap">
+                            Loading puzzle prompt...
+                        </div>
+                    </div>
+
+                    <!-- Hint Dropdown Section -->
+                    <div class="mb-6">
+                        <button onclick="toggleHint()" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium focus:outline-none">
+                            <i data-lucide="help-circle" class="w-4 h-4"></i>
+                            <span>Show Hint</span>
+                        </button>
+                        <div id="hint-box" class="hidden mt-2 p-3 bg-indigo-950/40 border border-indigo-800/40 rounded-lg text-xs text-indigo-300 code-font">
+                            Hint: <span id="hint-text">???</span>
+                        </div>
+                    </div>
+
+                    <!-- Answer Input Form -->
+                    <form id="submission-form" onsubmit="handleSubmission(event)" class="space-y-4">
+                        <div>
+                            <label for="answer-input" class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Input Answer</label>
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    id="answer-input" 
+                                    placeholder="Enter string answer here..." 
+                                    class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white code-font text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-24"
+                                    autocomplete="off"
+                                >
+                                <button 
+                                    type="submit" 
+                                    class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm rounded-md transition-colors flex items-center gap-1.5"
+                                >
+                                    <span>Submit</span>
+                                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Alert / Feedback Banner -->
+                    <div id="feedback-banner" class="hidden mt-4 p-4 rounded-lg text-sm border flex items-center gap-3">
+                        <i id="feedback-icon" class="w-5 h-5 flex-shrink-0"></i>
+                        <div id="feedback-message" class="font-medium"></div>
+                    </div>
+                </div>
+
+                <!-- Attempt History Log -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="history" class="w-4 h-4"></i> Attempt History
+                        </h3>
+                        <span id="attempt-count" class="text-xs text-slate-500">0 Attempts recorded</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs code-font">
+                            <thead>
+                                <tr class="text-slate-500 border-b border-slate-800">
+                                    <th class="pb-2 font-normal">Timestamp</th>
+                                    <th class="pb-2 font-normal">Step</th>
+                                    <th class="pb-2 font-normal">Input Provided</th>
+                                    <th class="pb-2 font-normal">SHA-256 Digest</th>
+                                    <th class="pb-2 font-normal text-right">Result</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y divide-slate-800/50 text-slate-400">
+                                <tr>
+                                    <td colspan="5" class="py-4 text-center text-slate-600 italic">No submissions recorded for this session.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-600">
+        <p>TRIXWORKS v1.0 &bull; The Gateway &bull; Client-Side SHA-256 Proof Verification</p>
+    </footer>
+
+    <!-- Application Script Engine -->
+    <script>
+        // =========================================================================
+        // 1. PUZZLE DATASET CONFIGURATION
+        // =========================================================================
+        // Difficulty assignments:
+        // Easy: Step 0, Step 1
+        // Medium: Step 2, Step 3, Step 5, Step 7, Step 8
+        // Hard: Step 4, Step 9
+        // Nightmare: Step 6, Step 10
+        const PUZZLE_DATA = [
+            {
+                id: "step-0",
+                title: "Step 0",
+                difficulty: "Easy",
+                prompt: "Welcome to TRIXWORKS v1.0: The Gateway.\n\nEnter your initial clearance key to begin step verification.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7" // "start"
+            },
+            {
+                id: "step-1",
+                title: "Step 1",
+                difficulty: "Easy",
+                prompt: "Replace this text with your custom Step 1 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            },
+            {
+                id: "step-2",
+                title: "Step 2",
+                difficulty: "Medium",
+                prompt: "Replace this text with your custom Step 2 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            },
+            {
+                id: "step-3",
+                title: "Step 3",
+                difficulty: "Medium",
+                prompt: "Replace this text with your custom Step 3 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            },
+            {
+                id: "step-4",
+                title: "Step 4",
+                difficulty: "Hard",
+                prompt: "Replace this text with your custom Step 4 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            },
+            {
+                id: "step-5",
+                title: "Step 5",
+                difficulty: "Medium",
+                prompt: "Replace this text with your custom Step 5 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            },
+            {
+                id: "step-6",
+                title: "Step 6",
+                difficulty: "Nightmare",
+                prompt: "Replace this text with your custom Step 6 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            },
+            {
+                id: "step-7",
+                title: "Step 7",
+                difficulty: "Medium",
+                prompt: "Replace this text with your custom Step 7 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            },
+            {
+                id: "step-8",
+                title: "Step 8",
+                difficulty: "Medium",
+                prompt: "Replace this text with your custom Step 8 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            },
+            {
+                id: "step-9",
+                title: "Step 9",
+                difficulty: "Hard",
+                prompt: "Replace this text with your custom Step 9 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            },
+            {
+                id: "step-10",
+                title: "Step 10",
+                difficulty: "Nightmare",
+                prompt: "Replace this text with your custom Step 10 instructions.",
+                hint: "???",
+                hash: "e6c0c29497e7486e92751f893e36e6593574c86510bb5d81b498e94a8677c7f7"
+            }
+        ];
+
+        // =========================================================================
+        // 2. STATE MANAGEMENT & STORAGE KEYS
+        // =========================================================================
+        const STORAGE_KEY_PROGRESS = 'trixworks_gateway_solved_v1';
+        const STORAGE_KEY_LOGS = 'trixworks_gateway_logs_v1';
+
+        let activeIndex = 0;
+        let solvedSet = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS) || '[]'));
+        let historyLogs = JSON.parse(localStorage.getItem(STORAGE_KEY_LOGS) || '[]');
+
+        // =========================================================================
+        // 3. CRYPTOGRAPHIC HELPERS (SHA-256)
+        // =========================================================================
+        async function sha256(str) {
+            const buffer = new TextEncoder().encode(str.trim().toLowerCase());
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // =========================================================================
+        // 4. UI INITIALIZATION & RENDERING
+        // =========================================================================
+        function initApp() {
+            renderSidebar();
+            loadChallenge(0);
+            updateProgressUI();
+            renderHistoryTable();
+            lucide.createIcons();
+        }
+
+        function renderSidebar() {
+            const listContainer = document.getElementById('puzzle-selector-list');
+            listContainer.innerHTML = '';
+
+            PUZZLE_DATA.forEach((puzzle, index) => {
+                const isSolved = solvedSet.has(puzzle.id);
+                const isActive = index === activeIndex;
+
+                let difficultyColor = 'text-green-400 bg-green-500/10 border-green-500/20';
+                if (puzzle.difficulty === 'Medium') difficultyColor = 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
+                if (puzzle.difficulty === 'Hard') difficultyColor = 'text-orange-400 bg-orange-500/10 border-orange-500/20';
+                if (puzzle.difficulty === 'Nightmare') difficultyColor = 'text-red-400 bg-red-500/10 border-red-500/20';
+
+                const card = document.createElement('div');
+                card.onclick = () => loadChallenge(index);
+                card.className = `p-3.5 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
+                    isActive 
+                        ? 'bg-blue-600/10 border-blue-500/50 text-white glow-effect' 
+                        : 'bg-slate-900 border-slate-800 hover:border-slate-700 text-slate-400'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded flex items-center justify-center font-bold text-xs ${
+                            isSolved ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-slate-800 text-slate-400'
+                        }">
+                            ${isSolved ? '<i data-lucide="check" class="w-4 h-4"></i>' : index}
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold ${isActive ? 'text-white' : 'text-slate-300'}">${puzzle.title}</div>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded border font-medium uppercase tracking-wider ${difficultyColor}">${puzzle.difficulty}</span>
+                        </div>
+                    </div>
+                    <i data-lucide="${isSolved ? 'unlock' : 'lock'}" class="w-4 h-4 ${isSolved ? 'text-green-400' : 'text-slate-600'}"></i>
+                `;
+                listContainer.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function loadChallenge(index) {
+            activeIndex = index;
+            const puzzle = PUZZLE_DATA[index];
+            const isSolved = solvedSet.has(puzzle.id);
+
+            document.getElementById('challenge-badge').innerText = `Step ${index}`;
+            document.getElementById('challenge-title').innerText = puzzle.title;
+            document.getElementById('challenge-prompt').innerText = puzzle.prompt;
+            document.getElementById('hint-text').innerText = puzzle.hint;
+
+            // Update difficulty badge style
+            const diffBadge = document.getElementById('difficulty-badge');
+            diffBadge.innerText = puzzle.difficulty;
+            diffBadge.className = "px-2 py-0.5 text-xs font-semibold rounded border ";
+            if (puzzle.difficulty === 'Easy') diffBadge.className += "bg-green-500/10 text-green-400 border-green-500/20";
+            else if (puzzle.difficulty === 'Medium') diffBadge.className += "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+            else if (puzzle.difficulty === 'Hard') diffBadge.className += "bg-orange-500/10 text-orange-400 border-orange-500/20";
+            else diffBadge.className += "bg-red-500/10 text-red-400 border-red-500/20";
+
+            // Status Icon
+            const iconContainer = document.getElementById('status-icon-container');
+            iconContainer.innerHTML = isSolved 
+                ? '<span class="flex items-center gap-1 text-green-400 font-semibold text-xs border border-green-500/30 bg-green-500/10 px-2.5 py-1 rounded-full"><i data-lucide="check-circle" class="w-4 h-4"></i> Solved</span>'
+                : '<i data-lucide="lock" class="w-5 h-5 text-slate-500"></i>';
+
+            // Reset Input & Feedback
+            document.getElementById('answer-input').value = '';
+            document.getElementById('hint-box').classList.add('hidden');
+            hideFeedback();
+            renderSidebar();
+        }
+
+        // =========================================================================
+        // 5. SUBMISSION & VERIFICATION LOGIC
+        // =========================================================================
+        async function handleSubmission(event) {
+            event.preventDefault();
+            const inputField = document.getElementById('answer-input');
+            const rawValue = inputField.value.trim();
+            
+            if (!rawValue) return;
+
+            const puzzle = PUZZLE_DATA[activeIndex];
+            const computedHash = await sha256(rawValue);
+            const isCorrect = computedHash === puzzle.hash;
+
+            // Log entry
+            const logEntry = {
+                timestamp: new Date().toLocaleTimeString(),
+                stepTitle: puzzle.title,
+                input: rawValue,
+                hash: computedHash.substring(0, 10) + '...',
+                status: isCorrect ? 'PASS' : 'FAIL'
+            };
+
+            historyLogs.unshift(logEntry);
+            if (historyLogs.length > 25) historyLogs.pop(); // Keep last 25
+            localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(historyLogs));
+
+            if (isCorrect) {
+                solvedSet.add(puzzle.id);
+                localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify([...solvedSet]));
+                showFeedback(true, "ACCESS GRANTED: Correct answer provided.");
+                updateProgressUI();
+                loadChallenge(activeIndex);
+            } else {
+                showFeedback(false, "ACCESS DENIED: Incorrect hash signature.");
+                triggerShake();
+            }
+
+            renderHistoryTable();
+        }
+
+        // =========================================================================
+        // 6. HELPER & UTILITY FUNCTIONS
+        // =========================================================================
+        function showFeedback(isSuccess, message) {
+            const banner = document.getElementById('feedback-banner');
+            const icon = document.getElementById('feedback-icon');
+            const msg = document.getElementById('feedback-message');
+
+            banner.classList.remove('hidden', 'bg-green-950/50', 'border-green-800', 'text-green-300', 'bg-red-950/50', 'border-red-800', 'text-red-300');
+            
+            if (isSuccess) {
+                banner.classList.add('bg-green-950/50', 'border-green-800', 'text-green-300');
+                icon.setAttribute('data-lucide', 'check-circle-2');
+            } else {
+                banner.classList.add('bg-red-950/50', 'border-red-800', 'text-red-300');
+                icon.setAttribute('data-lucide', 'x-circle');
+            }
+
+            msg.innerText = message;
+            lucide.createIcons();
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedback-banner').classList.add('hidden');
+        }
+
+        function triggerShake() {
+            const card = document.getElementById('challenge-card');
+            card.classList.add('animate-shake', 'glow-error');
+            setTimeout(() => card.classList.remove('animate-shake', 'glow-error'), 400);
+        }
+
+        function toggleHint() {
+            document.getElementById('hint-box').classList.toggle('hidden');
+        }
+
+        function updateProgressUI() {
+            const total = PUZZLE_DATA.length;
+            const count = solvedSet.size;
+            const percentage = Math.round((count / total) * 100);
+
+            document.getElementById('progress-text').innerText = `${count} / ${total} Solved`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('history-table-body');
+            document.getElementById('attempt-count').innerText = `${historyLogs.length} Attempt(s)`;
+
+            if (historyLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-600 italic">No submissions recorded for this session.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = historyLogs.map(log => `
+                <tr class="hover:bg-slate-800/30">
+                    <td class="py-2 text-slate-500">${log.timestamp}</td>
+                    <td class="py-2 text-slate-300 font-semibold">${log.stepTitle}</td>
+                    <td class="py-2 text-slate-300">${escapeHtml(log.input)}</td>
+                    <td class="py-2 text-slate-500">${log.hash}</td>
+                    <td class="py-2 text-right">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            log.status === 'PASS' 
+                                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        }">
+                            ${log.status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function resetProgress() {
+            if (confirm("Reset all solved states and submission logs?")) {
+                localStorage.removeItem(STORAGE_KEY_PROGRESS);
+                localStorage.removeItem(STORAGE_KEY_LOGS);
+                solvedSet.clear();
+                historyLogs = [];
+                initApp();
+            }
+        }
+
+        // Run App
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
