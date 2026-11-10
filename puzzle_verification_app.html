@@ -180,11 +180,6 @@
         // =========================================================================
         // 1. PUZZLE DATASET CONFIGURATION
         // =========================================================================
-        // Difficulty assignments:
-        // Easy: Step 0, Step 1
-        // Medium: Step 2, Step 3, Step 5, Step 7, Step 8
-        // Hard: Step 4, Step 9
-        // Nightmare: Step 6, Step 10
         const PUZZLE_DATA = [
             {
                 id: "step-0",
@@ -403,7 +398,7 @@
             };
 
             historyLogs.unshift(logEntry);
-            if (historyLogs.length > 25) historyLogs.pop(); // Keep last 25
+            if (historyLogs.length > 25) historyLogs.pop();
             localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(historyLogs));
 
             if (isCorrect) {
@@ -484,7 +479,7 @@
                         <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${
                             log.status === 'PASS' 
                                 ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                : 'bg-red-500/20 text-red-400 border border-red-500/30'
                         }">
                             ${log.status}
                         </span>
